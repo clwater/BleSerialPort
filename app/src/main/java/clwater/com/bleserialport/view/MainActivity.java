@@ -6,20 +6,29 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import clwater.com.bleserialport.R;
+import clwater.com.bleserialport.utils.BluetoothUtils;
+import clwater.com.bleserialport.utils.ConnectedThread;
 
 public class MainActivity extends AppCompatActivity {
 
     private final int RESULT_CODE_BLE = 10001;
     private final int RESULT_CODE_SCAN = 10002;
+
+
+    ConnectedThread mConnectedThread;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +44,62 @@ public class MainActivity extends AppCompatActivity {
                 checkBleScan();
             }
         });
+
+        findViewById(R.id.text_into_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText();
+            }
+        });
+
+
+
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (BluetoothUtils.getBluetoothSocket() == null || mConnectedThread != null) {
+
+            return;
+        }
+
+
+        //已连接蓝牙设备，则接收数据，并显示到接收区文本框
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case ConnectedThread.MESSAGE_READ:
+                        byte[] buffer = (byte[]) msg.obj;
+                        int length = msg.arg1;
+                        StringBuffer sb = new StringBuffer();
+                        for (int i=0; i < length; i++) {
+                            char c = (char) buffer[i];
+                            sb.append(c);
+                        }
+                        Log.d("gzb" , "" + sb);
+                        break;
+                }
+
+            }
+        };
+        mConnectedThread = new ConnectedThread(BluetoothUtils.getBluetoothSocket(), handler);
+        mConnectedThread.start();
+    }
+
+    private void sendText() {
+        String sendStr = "31";
+        char[] chars = sendStr.toCharArray();
+        byte[] bytes = new byte[chars.length];
+        for (int i=0; i < chars.length; i++) {
+            bytes[i] = (byte) chars[i];
+        }
+        mConnectedThread.write(bytes);
     }
 
     private void checkBleScan() {
