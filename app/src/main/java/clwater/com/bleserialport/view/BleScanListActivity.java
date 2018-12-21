@@ -27,12 +27,12 @@ import clwater.com.bleserialport.model.Device;
 import clwater.com.bleserialport.utils.BleConnectUtils;
 import clwater.com.bleserialport.view.adapter.ScanAdapter;
 
-public class BleScanListActivity extends AppCompatActivity{
+public class BleScanListActivity extends AppCompatActivity {
     private ScanAdapter mScanAdapter;
     private BluetoothAdapter mBluetoothAdapter;
-    private List<BluetoothDevice> mDeviceList = new ArrayList<>();
+    private List<Device> mDeviceList = new ArrayList<>();
     private Activity activity;
-    private  RelativeLayout relativeLayout;
+    private RelativeLayout relativeLayout;
     private BleBroadcastReceiver bleBroadcastReceiver;
 
     @Override
@@ -75,10 +75,11 @@ public class BleScanListActivity extends AppCompatActivity{
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
+
                 Device temp = new Device();
-                temp.name = device.getName();
-                temp.mac = device.getAddress();
-                mDeviceList.add(device);
+                temp.bluetoothDevice = device;
+                temp.type = 1;
+                mDeviceList.add(temp);
             }
             mScanAdapter.setNewData(mDeviceList);
         }
@@ -96,7 +97,7 @@ public class BleScanListActivity extends AppCompatActivity{
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 relativeLayout.setVisibility(View.VISIBLE);
-                BluetoothDevice bluetoothDevice = mDeviceList.get(position);
+                BluetoothDevice bluetoothDevice = mDeviceList.get(position).bluetoothDevice;
                 BleConnectUtils.INSTANCE.connect(activity, relativeLayout, bluetoothDevice, mBluetoothAdapter);
             }
         });
@@ -104,7 +105,7 @@ public class BleScanListActivity extends AppCompatActivity{
 
     }
 
-    class BleBroadcastReceiver extends BroadcastReceiver{
+    class BleBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -112,8 +113,11 @@ public class BleScanListActivity extends AppCompatActivity{
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device != null) {
-                    if (!mDeviceList.contains(device)){
-                        mDeviceList.add(device);
+                    Device temp = new Device();
+                    temp.bluetoothDevice = device;
+                    temp.type = 1;
+                    if (!mDeviceList.contains(temp)) {
+                        mDeviceList.add(temp);
                         mScanAdapter.notifyDataSetChanged();
                     }
                 }

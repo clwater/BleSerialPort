@@ -1,6 +1,8 @@
 package clwater.com.bleserialport.model;
 
+import android.bluetooth.BluetoothDevice;
+
 public class Device {
-    public String name;
-    public String mac;
+    public BluetoothDevice bluetoothDevice;
+    public int type;
 }

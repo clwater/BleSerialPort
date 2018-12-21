@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         if (permissionCheck == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, RESULT_CODE_SCAN);
+        }else {
+            startActivity(new Intent(MainActivity.this, BleScanListActivity.class));
         }
     }
 

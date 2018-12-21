@@ -11,15 +11,16 @@ import java.util.List;
 import clwater.com.bleserialport.R;
 import clwater.com.bleserialport.model.Device;
 
-public class ScanAdapter extends BaseQuickAdapter<BluetoothDevice, BaseViewHolder> {
+public class ScanAdapter extends BaseQuickAdapter<Device, BaseViewHolder> {
 
-    public ScanAdapter(@Nullable List<BluetoothDevice> data) {
+    public ScanAdapter(@Nullable List<Device> data) {
         super(R.layout.item_scan, data);
     }
 
     @Override
-    protected void convert(BaseViewHolder helper, BluetoothDevice item) {
-        helper.setText(R.id.textview_scan_title, item.getName());
-        helper.setText(R.id.textview_scan_address, item.getAddress());
+    protected void convert(BaseViewHolder helper, Device item) {
+        BluetoothDevice bluetoothDevice = item.bluetoothDevice;
+        helper.setText(R.id.textview_scan_title, bluetoothDevice.getName());
+        helper.setText(R.id.textview_scan_address, bluetoothDevice.getAddress());
     }
 }
