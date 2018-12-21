@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +35,7 @@ public class BleScanListActivity extends AppCompatActivity {
     private Activity activity;
     private RelativeLayout relativeLayout;
     private BleBroadcastReceiver bleBroadcastReceiver;
+    private Set<String> loadAddress = new HashSet<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,15 +74,22 @@ public class BleScanListActivity extends AppCompatActivity {
     }
 
     private void initData() {
+        Device top1 = new Device();
+        top1.text = "已配对设备";
+        mDeviceList.add(top1);
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-
                 Device temp = new Device();
                 temp.bluetoothDevice = device;
                 temp.type = 1;
+                loadAddress.add(device.getAddress());
                 mDeviceList.add(temp);
             }
+
+            Device top2 = new Device();
+            top2.text = "可用设备";
+            mDeviceList.add(top2);
             mScanAdapter.setNewData(mDeviceList);
         }
     }
@@ -116,8 +125,9 @@ public class BleScanListActivity extends AppCompatActivity {
                     Device temp = new Device();
                     temp.bluetoothDevice = device;
                     temp.type = 1;
-                    if (!mDeviceList.contains(temp)) {
+                    if (!loadAddress.contains(device.getAddress())) {
                         mDeviceList.add(temp);
+                        loadAddress.add(device.getAddress());
                         mScanAdapter.notifyDataSetChanged();
                     }
                 }
