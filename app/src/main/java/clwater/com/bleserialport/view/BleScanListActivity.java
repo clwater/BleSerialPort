@@ -14,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
@@ -29,10 +30,10 @@ import clwater.com.bleserialport.view.adapter.ScanAdapter;
 public class BleScanListActivity extends AppCompatActivity{
     private ScanAdapter mScanAdapter;
     private BluetoothAdapter mBluetoothAdapter;
-    private List<Device> mDevice = new ArrayList<>();
     private List<BluetoothDevice> mDeviceList = new ArrayList<>();
     private Activity activity;
     private  RelativeLayout relativeLayout;
+    private BleBroadcastReceiver bleBroadcastReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,38 +41,46 @@ public class BleScanListActivity extends AppCompatActivity{
         setContentView(R.layout.activity_ble_scan);
 
         activity = this;
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         initView();
         initData();
+        initBle();
+    }
+
+    private void initBle() {
+        bleBroadcastReceiver = new BleBroadcastReceiver();
         initReceiver();
+        mBluetoothAdapter.startDiscovery();
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
+        unregisterReceiver(bleBroadcastReceiver);
+        if (mBluetoothAdapter.isDiscovering()) {
+            mBluetoothAdapter.cancelDiscovery();
+        }
     }
 
     private void initReceiver() {
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mReceiver, filter);
-        mBluetoothAdapter.startDiscovery();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(bleBroadcastReceiver, filter);
     }
 
     private void initData() {
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 Device temp = new Device();
                 temp.name = device.getName();
                 temp.mac = device.getAddress();
-                mDevice.add(temp);
                 mDeviceList.add(device);
             }
-            mScanAdapter.setNewData(mDevice);
+            mScanAdapter.setNewData(mDeviceList);
         }
     }
 
@@ -87,7 +96,6 @@ public class BleScanListActivity extends AppCompatActivity{
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 relativeLayout.setVisibility(View.VISIBLE);
-
                 BluetoothDevice bluetoothDevice = mDeviceList.get(position);
                 BleConnectUtils.INSTANCE.connect(activity, relativeLayout, bluetoothDevice, mBluetoothAdapter);
             }
@@ -96,19 +104,25 @@ public class BleScanListActivity extends AppCompatActivity{
 
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    class BleBroadcastReceiver extends BroadcastReceiver{
+        @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mDeviceList.add(device);
-                Device tempDevice = new Device();
-                tempDevice.name = device.getName();
-                tempDevice.mac = device.getAddress();
-                mDevice.add(tempDevice);
-                mScanAdapter.addData(mDevice);
+                if (device != null) {
+                    if (!mDeviceList.contains(device)){
+                        mDeviceList.add(device);
+                        mScanAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                Toast.makeText(activity, "扫描结束", Toast.LENGTH_SHORT).show();
             }
         }
-    };
+    }
 
 }
