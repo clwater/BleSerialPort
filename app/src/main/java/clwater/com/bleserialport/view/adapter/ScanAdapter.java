@@ -1,13 +1,10 @@
 package clwater.com.bleserialport.view.adapter;
 
 import android.bluetooth.BluetoothDevice;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
-import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
-import com.chad.library.adapter.base.entity.MultiItemEntity;
 
 import java.util.List;
 
@@ -19,7 +16,7 @@ public class ScanAdapter extends BaseMultiItemQuickAdapter<Device, BaseViewHolde
     public ScanAdapter(List<Device> data) {
         super(data);
         addItemType(1, R.layout.item_scan);
-        addItemType(0, R.layout.item_title);
+        addItemType(0, R.layout.item_simple);
     }
 
     @Override
@@ -35,7 +32,7 @@ public class ScanAdapter extends BaseMultiItemQuickAdapter<Device, BaseViewHolde
                 helper.setText(R.id.textview_scan_address, bluetoothDevice.getAddress());
                 break;
             case 0:
-                helper.setText(R.id.item_title, item.text);
+                helper.setText(R.id.item_text, item.text);
                 break;
         }
     }

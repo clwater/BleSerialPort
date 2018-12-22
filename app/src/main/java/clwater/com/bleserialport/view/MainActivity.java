@@ -3,6 +3,8 @@ package clwater.com.bleserialport.view;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,34 +14,78 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import clwater.com.bleserialport.R;
 import clwater.com.bleserialport.event.BleConnect;
 import clwater.com.bleserialport.utils.BluetoothUtils;
 import clwater.com.bleserialport.utils.ConnectedThread;
+import clwater.com.bleserialport.view.adapter.SimpleAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
     private final int RESULT_CODE_BLE = 10001;
     private final int RESULT_CODE_SCAN = 10002;
     private ConnectedThread mConnectedThread;
+    private BluetoothAdapter mBluetoothAdapter;
 
-    public static boolean isConnetc = false;
+    public static boolean isConnect = false;
 
+
+    //已连接蓝牙设备，则接收数据，并显示到接收区文本框
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case ConnectedThread.MESSAGE_READ:
+                    byte[] buffer = (byte[]) msg.obj;
+                    int length = msg.arg1;
+                    StringBuffer sb = new StringBuffer();
+                    for (int i = 0; i < length; i++) {
+                        char c = (char) buffer[i];
+                        sb.append(c);
+                    }
+                    readAdapter.addData(sb.toString());
+                    readList.scrollToPosition(readAdapter.getData().size() - 1);
+                    break;
+            }
+        }
+    };
+
+
+    RecyclerView writeList;
+    RecyclerView readList;
+    SimpleAdapter writeAdapter;
+    SimpleAdapter readAdapter;
+    EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        EventBus.getDefault().register(this);
 
         initBleStatus();
+        initView();
+    }
+
+    private void initView() {
 
         TextView textView = findViewById(R.id.text_into_scan);
         textView.setOnClickListener(new View.OnClickListener() {
@@ -49,14 +95,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        writeAdapter = new SimpleAdapter(null);
+        readAdapter = new SimpleAdapter(null);
+
+        writeList = findViewById(R.id.recyclerview_write);
+        writeList.setLayoutManager(new LinearLayoutManager(this));
+        readList = findViewById(R.id.recyclerview_read);
+        readList.setLayoutManager(new LinearLayoutManager(this));
+
+        writeList.setAdapter(writeAdapter);
+        readList.setAdapter(readAdapter);
+
+
+        editText = findViewById(R.id.edittext_send);
+
         findViewById(R.id.text_into_send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendText("31");
+                String write = editText.getText().toString();
+                if (!TextUtils.isEmpty(write)) {
+                    sendText(write);
+                }
             }
         });
 
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
 
     @Override
     protected void onResume() {
@@ -67,39 +137,46 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        //已连接蓝牙设备，则接收数据，并显示到接收区文本框
-        Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case ConnectedThread.MESSAGE_READ:
-                        byte[] buffer = (byte[]) msg.obj;
-                        int length = msg.arg1;
-                        StringBuffer sb = new StringBuffer();
-                        for (int i=0; i < length; i++) {
-                            char c = (char) buffer[i];
-                            sb.append(c);
-                        }
-                        Log.d("gzb" , "" + sb);
-                        break;
-                }
-
-            }
-        };
         mConnectedThread = new ConnectedThread(BluetoothUtils.getBluetoothSocket(), handler);
         mConnectedThread.start();
     }
 
     private void sendText(String sendStr) {
-       if ()
-        send(sendStr);
+        if (isConnect || getConnectBt()) {
+            send(sendStr);
+        } else {
+            Toast.makeText(this, "未连接设备", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private boolean getConnectBt() {
+        int a2dp = mBluetoothAdapter.getProfileConnectionState(BluetoothProfile.A2DP);
+        int headset = mBluetoothAdapter.getProfileConnectionState(BluetoothProfile.HEADSET);
+        int health = mBluetoothAdapter.getProfileConnectionState(BluetoothProfile.HEALTH);
+        int flag = -1;
+        if (a2dp == BluetoothProfile.STATE_CONNECTED) {
+            flag = a2dp;
+        } else if (headset == BluetoothProfile.STATE_CONNECTED) {
+            flag = headset;
+        } else if (health == BluetoothProfile.STATE_CONNECTED) {
+            flag = health;
+        }
+        if (flag != -1) {
+            isConnect = true;
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     private void send(String sendStr) {
+        writeAdapter.addData(sendStr);
+        writeList.scrollToPosition(writeAdapter.getData().size() - 1);
         char[] chars = sendStr.toCharArray();
         byte[] bytes = new byte[chars.length];
-        for (int i=0; i < chars.length; i++) {
+        for (int i = 0; i < chars.length; i++) {
             bytes[i] = (byte) chars[i];
         }
         mConnectedThread.write(bytes);
@@ -110,14 +187,13 @@ public class MainActivity extends AppCompatActivity {
         if (permissionCheck == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, RESULT_CODE_SCAN);
-        }else {
+        } else {
             startActivity(new Intent(MainActivity.this, BleScanListActivity.class));
         }
     }
 
     private void initBleStatus() {
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBluetoothAdapter.getProfileConnectionState()
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "不支持", Toast.LENGTH_SHORT).show();
         }
@@ -129,9 +205,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void BleConnectStatus(BleConnect bleConnect){
-        if (bleConnect.success){
-            isConnetc = true;
+    public void BleConnectStatus(BleConnect bleConnect) {
+        if (bleConnect.success) {
+            isConnect = true;
             Toast.makeText(this, "连接成功", Toast.LENGTH_SHORT).show();
         }
     }
@@ -163,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showDialog(){
+    public void showDialog() {
         final AlertDialog.Builder normalDialog = new AlertDialog.Builder(MainActivity.this);
         normalDialog.setTitle("申请定位权限");
         normalDialog.setMessage("禁止定位权限可能导致6.0以上系统无法搜索到新的蓝牙设备\n是否重新申请权限?");
