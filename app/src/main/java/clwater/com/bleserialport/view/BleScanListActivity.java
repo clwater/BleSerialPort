@@ -18,12 +18,17 @@ import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import clwater.com.bleserialport.R;
+import clwater.com.bleserialport.event.BleConnect;
 import clwater.com.bleserialport.model.Device;
 import clwater.com.bleserialport.utils.BleConnectUtils;
 import clwater.com.bleserialport.view.adapter.ScanAdapter;
@@ -41,6 +46,7 @@ public class BleScanListActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ble_scan);
+        EventBus.getDefault().register(this);
 
         activity = this;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -60,6 +66,7 @@ public class BleScanListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         unregisterReceiver(bleBroadcastReceiver);
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
@@ -106,8 +113,13 @@ public class BleScanListActivity extends AppCompatActivity {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 relativeLayout.setVisibility(View.VISIBLE);
-                BluetoothDevice bluetoothDevice = mDeviceList.get(position).bluetoothDevice;
-                BleConnectUtils.INSTANCE.connect(activity, relativeLayout, bluetoothDevice, mBluetoothAdapter);
+                final BluetoothDevice bluetoothDevice = mDeviceList.get(position).bluetoothDevice;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        BleConnectUtils.INSTANCE.connect(bluetoothDevice, mBluetoothAdapter);
+                    }
+                }).start();
             }
         });
 
@@ -136,6 +148,25 @@ public class BleScanListActivity extends AppCompatActivity {
             if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Toast.makeText(activity, "扫描结束", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void BleConnectStatus(BleConnect bleConnect){
+        if (!bleConnect.success){
+            switch (bleConnect.status){
+                case 1:
+                    Toast.makeText(activity, "获取Socket失败", Toast.LENGTH_SHORT).show();
+                    relativeLayout.setVisibility(View.GONE);
+                    break;
+                case 2:
+                    Toast.makeText(activity, "连接失败", Toast.LENGTH_SHORT).show();
+                    relativeLayout.setVisibility(View.GONE);
+                    break;
+
+            }
+        }else {
+            this.finish();
         }
     }
 

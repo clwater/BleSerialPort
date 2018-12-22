@@ -17,7 +17,11 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import clwater.com.bleserialport.R;
+import clwater.com.bleserialport.event.BleConnect;
 import clwater.com.bleserialport.utils.BluetoothUtils;
 import clwater.com.bleserialport.utils.ConnectedThread;
 
@@ -52,10 +56,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-
-
     }
 
     @Override
@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         if (BluetoothUtils.getBluetoothSocket() == null || mConnectedThread != null) {
-
             return;
         }
 
@@ -121,6 +120,13 @@ public class MainActivity extends AppCompatActivity {
         boolean enabled = mBluetoothAdapter.isEnabled();
         if (!enabled) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), RESULT_CODE_BLE);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void BleConnectStatus(BleConnect bleConnect){
+        if (bleConnect.success){
+            Toast.makeText(this, "连接成功", Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -8,32 +8,32 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.UUID;
 
+import clwater.com.bleserialport.event.BleConnect;
+
 public enum  BleConnectUtils {
     INSTANCE;
-    public void connect(Activity activity, RelativeLayout relativeLayout, BluetoothDevice device, BluetoothAdapter mBluetoothAdapter){
+    public void connect(BluetoothDevice device, BluetoothAdapter mBluetoothAdapter){
         BluetoothSocket socket = null;
         try {
             // 蓝牙串口服务对应的UUID。如使用的是其它蓝牙服务，需更改下面的字符串
             UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
             socket = device.createRfcommSocketToServiceRecord(MY_UUID);
         } catch (Exception e) {
-            Toast.makeText(activity, "获取Socket失败", Toast.LENGTH_SHORT).show();
-            relativeLayout.setVisibility(View.GONE);
+            EventBus.getDefault().post(new BleConnect(false, 1));
             return;
         }
         mBluetoothAdapter.cancelDiscovery();
         try {
             socket.connect();
-            Toast.makeText(activity, "连接成功", Toast.LENGTH_SHORT).show();
             BluetoothUtils.setBluetoothSocket(socket);
-
-            activity.finish();
+            EventBus.getDefault().post(new BleConnect(true, 0));
         } catch (IOException connectException) {
-            Toast.makeText(activity, "连接失败", Toast.LENGTH_SHORT).show();
-            relativeLayout.setVisibility(View.GONE);
+            EventBus.getDefault().post(new BleConnect(false, 2));
             try {
                 socket.close();
             } catch (IOException closeException) {
