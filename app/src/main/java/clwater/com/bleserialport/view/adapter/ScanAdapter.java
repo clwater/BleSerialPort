@@ -2,6 +2,7 @@ package clwater.com.bleserialport.view.adapter;
 
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -26,7 +27,11 @@ public class ScanAdapter extends BaseMultiItemQuickAdapter<Device, BaseViewHolde
         switch (helper.getItemViewType()) {
             case 1:
                 BluetoothDevice bluetoothDevice = item.bluetoothDevice;
-                helper.setText(R.id.textview_scan_title, bluetoothDevice.getName());
+                if (!TextUtils.isEmpty(bluetoothDevice.getName())){
+                    helper.setText(R.id.textview_scan_title, bluetoothDevice.getName());
+                }else {
+                    helper.setText(R.id.textview_scan_title, "未知设备");
+                }
                 helper.setText(R.id.textview_scan_address, bluetoothDevice.getAddress());
                 break;
             case 0:
