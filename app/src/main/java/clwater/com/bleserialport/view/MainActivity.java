@@ -29,9 +29,9 @@ public class MainActivity extends AppCompatActivity {
 
     private final int RESULT_CODE_BLE = 10001;
     private final int RESULT_CODE_SCAN = 10002;
+    private ConnectedThread mConnectedThread;
 
-
-    ConnectedThread mConnectedThread;
+    public static boolean isConnetc = false;
 
 
     @Override
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.text_into_send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendText();
+                sendText("31");
             }
         });
 
@@ -91,8 +91,12 @@ public class MainActivity extends AppCompatActivity {
         mConnectedThread.start();
     }
 
-    private void sendText() {
-        String sendStr = "31";
+    private void sendText(String sendStr) {
+       if ()
+        send(sendStr);
+    }
+
+    private void send(String sendStr) {
         char[] chars = sendStr.toCharArray();
         byte[] bytes = new byte[chars.length];
         for (int i=0; i < chars.length; i++) {
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initBleStatus() {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothAdapter.getProfileConnectionState()
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "不支持", Toast.LENGTH_SHORT).show();
         }
@@ -126,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void BleConnectStatus(BleConnect bleConnect){
         if (bleConnect.success){
+            isConnetc = true;
             Toast.makeText(this, "连接成功", Toast.LENGTH_SHORT).show();
         }
     }
