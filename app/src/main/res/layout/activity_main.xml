@@ -15,59 +15,89 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
-        android:text="断开连接" />
+        android:text="断开连接"
+        />
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/edittext_send"
-        app:layout_constraintTop_toBottomOf="@+id/text_into_scan"
-        android:padding="16dp">
+        app:layout_constraintTop_toBottomOf="@id/text_into_scan"
+        app:layout_constraintBottom_toBottomOf="parent">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="接收:"
-            android:textSize="20sp"/>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerview_read"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ctrl_2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/ctrl_3"
+            android:background="@drawable/bg_ctrl"
+            android:layout_margin="20dp"
+            android:id="@+id/ctrl_1">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="控制1"
+                android:gravity="center"
+                />
+        </LinearLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="发送:"
-            android:textSize="20sp"/>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerview_write"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ctrl_1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/ctrl_4"
+            android:background="@drawable/bg_ctrl"
+            android:layout_margin="20dp"
+            android:id="@+id/ctrl_2">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="控制2"
+                android:gravity="center"
+                />
+        </LinearLayout>
 
-    </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/ctrl_1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ctrl_4"
+            android:id="@+id/ctrl_3"
+            android:background="@drawable/bg_ctrl"
+            android:layout_margin="20dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="控制3"
+                android:gravity="center"
+                />
+        </LinearLayout>
 
 
-    <EditText
-        android:id="@+id/edittext_send"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/text_into_send"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/text_into_send" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/ctrl_2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ctrl_3"
+            android:background="@drawable/bg_ctrl"
+            android:layout_margin="20dp"
+            android:id="@+id/ctrl_4">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="控制4"
+                android:gravity="center"
+                />
+        </LinearLayout>
 
-    <Button
-        android:id="@+id/text_into_send"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="发送"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>

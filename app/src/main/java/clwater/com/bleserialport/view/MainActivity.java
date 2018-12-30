@@ -56,19 +56,12 @@ public class MainActivity extends AppCompatActivity {
                         char c = (char) buffer[i];
                         sb.append(c);
                     }
-                    readAdapter.addData(sb.toString());
-                    readList.scrollToPosition(readAdapter.getData().size() - 1);
                     break;
             }
         }
     };
 
 
-    RecyclerView writeList;
-    RecyclerView readList;
-    SimpleAdapter writeAdapter;
-    SimpleAdapter readAdapter;
-    EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,31 +83,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        writeAdapter = new SimpleAdapter(null);
-        readAdapter = new SimpleAdapter(null);
-
-        writeList = findViewById(R.id.recyclerview_write);
-        writeList.setLayoutManager(new LinearLayoutManager(this));
-        readList = findViewById(R.id.recyclerview_read);
-        readList.setLayoutManager(new LinearLayoutManager(this));
-
-        writeList.setAdapter(writeAdapter);
-        readList.setAdapter(readAdapter);
-
-
-        editText = findViewById(R.id.edittext_send);
-
-        findViewById(R.id.text_into_send).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String write = editText.getText().toString();
-                if (!TextUtils.isEmpty(write)) {
-                    sendText(write);
-                }
-            }
-        });
-
-
         findViewById(R.id.text_into_disconnect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,6 +95,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        findViewById(R.id.ctrl_1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText("31");
+            }
+        });
+
+        findViewById(R.id.ctrl_2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText("34");
+            }
+        });
+
+        findViewById(R.id.ctrl_3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText("37");
+            }
+        });
+
+        findViewById(R.id.ctrl_4).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendText("39");
+            }
+        });
 
     }
 
@@ -181,8 +177,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void send(String sendStr) {
-        writeAdapter.addData(sendStr);
-        writeList.scrollToPosition(writeAdapter.getData().size() - 1);
         char[] chars = sendStr.toCharArray();
         byte[] bytes = new byte[chars.length];
         for (int i = 0; i < chars.length; i++) {
