@@ -1,12 +1,8 @@
 package clwater.com.bleserialport.utils;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -41,4 +37,11 @@ public enum  BleConnectUtils {
         }
     }
 
+    public void close(){
+        try {
+            BluetoothUtils.getBluetoothSocket().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

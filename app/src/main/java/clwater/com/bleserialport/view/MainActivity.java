@@ -3,7 +3,6 @@ package clwater.com.bleserialport.view;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -27,12 +25,9 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 import clwater.com.bleserialport.R;
 import clwater.com.bleserialport.event.BleConnect;
+import clwater.com.bleserialport.utils.BleConnectUtils;
 import clwater.com.bleserialport.utils.BluetoothUtils;
 import clwater.com.bleserialport.utils.ConnectedThread;
 import clwater.com.bleserialport.view.adapter.SimpleAdapter;
@@ -118,6 +113,20 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+        findViewById(R.id.text_into_disconnect).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isConnect){
+                    BleConnectUtils.INSTANCE.close();
+                    isConnect = false;
+                }else{
+                    Toast.makeText(MainActivity.this, "未链接设备", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
 
     }
 
